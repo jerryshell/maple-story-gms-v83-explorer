@@ -56,6 +56,9 @@ function App() {
     }, [pageCount, pageNumber])
 
     const fetchItemList = () => {
+        if (!currentItemCategoryLevel3) {
+            return
+        }
         setLoadingFlag(true)
         itemApi.search(pageCount, pageStartPosition, currentItemCategoryLevel1, currentItemCategoryLevel2, currentItemCategoryLevel3)
             .then(response => {
@@ -73,9 +76,7 @@ function App() {
 
     const [itemList, setItemList] = useState<{ id: number, name: string }[]>([])
     useEffect(() => {
-        if (currentItemCategoryLevel3) {
-            fetchItemList()
-        }
+        fetchItemList()
     }, [currentItemCategoryLevel3])
 
     return (
