@@ -8,6 +8,8 @@ import Disclaimer from './components/Disclaimer'
 const itemCategoryLevel1List = Object.keys(itemCategoryData)
 
 function App() {
+    const [loadingFlag, setLoadingFlag] = useState(false)
+
     const [currentItemCategoryLevel1, setCurrentItemCategoryLevel1] = useState(itemCategoryLevel1List[3])
 
     const [itemCategoryLevel2List, setItemCategoryLevel2List] = useState<string[]>([])
@@ -38,7 +40,7 @@ function App() {
                 return
             }
         })
-    }, [currentItemCategoryLevel1, currentItemCategoryLevel2])
+    }, [currentItemCategoryLevel2])
 
     const [currentItemCategoryLevel3, setCurrentItemCategoryLevel3] = useState(itemCategoryLevel3List[0])
     useEffect(() => {
@@ -54,11 +56,15 @@ function App() {
     }, [pageCount, pageNumber])
 
     const fetchItemList = () => {
+        setLoadingFlag(true)
         itemApi.search(pageCount, pageStartPosition, currentItemCategoryLevel1, currentItemCategoryLevel2, currentItemCategoryLevel3)
             .then(response => {
                 const itemList = response.data
                 console.log('itemList', itemList)
                 setItemList(itemList)
+            })
+            .finally(() => {
+                setLoadingFlag(false)
             })
     }
     useEffect(() => {
@@ -93,7 +99,9 @@ function App() {
                     onChange={e => setCurrentItemCategoryLevel1(e.target.value)}
                 >
                     {itemCategoryLevel1List.map(itemCategoryLevel1 => (
-                        <option key={itemCategoryLevel1} value={itemCategoryLevel1}>{itemCategoryLevel1}</option>
+                        <option
+                            key={itemCategoryLevel1} value={itemCategoryLevel1}
+                        >{itemCategoryLevel1}</option>
                     ))}
                 </select>
                 <select
@@ -102,7 +110,9 @@ function App() {
                     onChange={e => setCurrentItemCategoryLevel2(e.target.value)}
                 >
                     {itemCategoryLevel2List.map(itemCategoryLevel2 => (
-                        <option key={itemCategoryLevel2} value={itemCategoryLevel2}>{itemCategoryLevel2}</option>
+                        <option
+                            key={itemCategoryLevel2} value={itemCategoryLevel2}
+                        >{itemCategoryLevel2}</option>
                     ))}
                 </select>
                 <select
@@ -111,29 +121,41 @@ function App() {
                     onChange={e => setCurrentItemCategoryLevel3(e.target.value)}
                 >
                     {itemCategoryLevel3List.map(itemCategoryLevel3 => (
-                        <option key={itemCategoryLevel3} value={itemCategoryLevel3}>{itemCategoryLevel3}</option>
+                        <option
+                            key={itemCategoryLevel3} value={itemCategoryLevel3}
+                        >{itemCategoryLevel3}</option>
                     ))}
                 </select>
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Icon</th>
-                        <th>ID</th>
-                        <th>Name</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {itemList.map(item => (
-                        <tr key={item.id}>
-                            <td>
-                                <img src={`https://maplestory.io/api/GMS/231/item/${item.id}/icon`} alt={item.name}/>
-                            </td>
-                            <td>{item.id}</td>
-                            <td>{item.name}</td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
+
+                {
+                    loadingFlag ?
+                        <h2>Loading...</h2>
+                        :
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Icon</th>
+                                <th>ID</th>
+                                <th>Name</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {itemList.map(item => (
+                                <tr key={item.id}>
+                                    <td>
+                                        <img
+                                            src={`https://maplestory.io/api/GMS/231/item/${item.id}/icon`}
+                                            alt={item.name}
+                                        />
+                                    </td>
+                                    <td>{item.id}</td>
+                                    <td>{item.name}</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                }
+
                 <span>Current Page: {pageNumber + 1}</span>
                 <span> </span>
                 <button
