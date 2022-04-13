@@ -1,4 +1,4 @@
-# Maple Story GMS V83 Explorer
+# MapleStory GMS V83 Explorer
 
 All aforementioned media, icons, descriptions, and character information provided by this service thereof are the sole
 property of [NEXON](https://www.nexon.net) and therefor applies to
