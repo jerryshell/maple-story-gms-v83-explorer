@@ -54,20 +54,28 @@ const ItemCategoryTable = () => {
         setCurrentItemCategoryLevel3(itemCategoryLevel3List[0])
     }, [itemCategoryLevel3List])
 
-    const [pageCount, setPageCount] = useState<number>(10)
+    const [itemList, setItemList] = useState<{ id: number, name: string }[]>([])
+    useEffect(() => {
+        fetchItemList()
+    }, [currentItemCategoryLevel3])
+
+    const [itemTotalCount, setItemTotalCount] = useState<number>(0)
+
+    const [pageSize, setPageSize] = useState<number>(10)
+
     const [pageNumber, setPageNumber] = useState<number>(0)
 
     const [pageStartPosition, setPageStartPosition] = useState<number>(0)
     useEffect(() => {
-        setPageStartPosition(pageNumber * pageCount)
-    }, [pageCount, pageNumber])
+        setPageStartPosition(pageNumber * pageSize)
+    }, [pageSize, pageNumber])
 
     const fetchItemList = () => {
         if (!currentItemCategoryLevel3) {
             return
         }
         setLoadingFlag(true)
-        itemApi.search(pageCount, pageStartPosition, currentItemCategoryLevel1, currentItemCategoryLevel2, currentItemCategoryLevel3)
+        itemApi.search(pageSize, pageStartPosition, currentItemCategoryLevel1, currentItemCategoryLevel2, currentItemCategoryLevel3)
             .then(response => {
                 const itemList = response.data
                 console.log('itemList', itemList)
@@ -81,10 +89,27 @@ const ItemCategoryTable = () => {
         fetchItemList()
     }, [pageStartPosition])
 
-    const [itemList, setItemList] = useState<{ id: number, name: string }[]>([])
+    const fetchItemTotalCount = () => {
+        if (!currentItemCategoryLevel3) {
+            return
+        }
+        itemApi.count(currentItemCategoryLevel1, currentItemCategoryLevel2, currentItemCategoryLevel3)
+            .then(response => {
+                const itemCount = response.data
+                console.log('itemTotalCount', itemCount)
+                setItemTotalCount(itemCount)
+            })
+    }
     useEffect(() => {
-        fetchItemList()
+        fetchItemTotalCount()
     }, [currentItemCategoryLevel3])
+
+    const [totalPageCount, setTotalPageCount] = useState<number>(0)
+    useEffect(() => {
+        setTotalPageCount(Math.ceil(itemTotalCount / pageSize))
+    }, [itemTotalCount, pageSize])
+
+    const [gotoPageNumber, setGotoPageNumber] = useState<number>(0)
 
     return (
         <fieldset>
@@ -123,52 +148,75 @@ const ItemCategoryTable = () => {
                 ))}
             </select>
 
-            {
-                loadingFlag ?
-                    <h2>Loading...</h2>
-                    :
-                    <table>
-                        <thead>
-                        <tr>
-                            <th>Icon</th>
-                            <th>ID</th>
-                            <th>Name</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {itemList.map(item => (
-                            <tr key={item.id}>
-                                <td>
-                                    <img
-                                        src={`https://maplestory.io/api/GMS/231/item/${item.id}/icon`}
-                                        alt={item.name}
-                                    />
-                                </td>
-                                <td>{item.id}</td>
-                                <td>{item.name}</td>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
-            }
+            <table>
+                <thead>
+                <tr>
+                    <th>Icon</th>
+                    <th>ID</th>
+                    <th>Name</th>
+                </tr>
+                </thead>
+                <tbody>
+                {itemList.map(item => (
+                    <tr key={item.id}>
+                        <td>
+                            <img
+                                src={`https://maplestory.io/api/GMS/231/item/${item.id}/icon`}
+                                alt={item.name}
+                            />
+                        </td>
+                        <td>{item.id}</td>
+                        <td>{item.name}</td>
+                    </tr>
+                ))}
+                </tbody>
+            </table>
 
-            <span>Current Page: {pageNumber + 1}</span>
-            <span> </span>
-            <button
-                onClick={() => {
-                    setPageNumber(Math.max(pageNumber - 1, 0))
-                }}
-                disabled={pageNumber <= 0}
-            >
-                Previous page
-            </button>
-            <button
-                onClick={() => {
-                    setPageNumber(pageNumber + 1)
-                }}
-            >
-                Next page
-            </button>
+            {loadingFlag && <h2>Loading...</h2>}
+
+            <div>
+                <span>Total Count: {itemTotalCount}</span>
+                <span> | </span>
+                <span>Total Page: {totalPageCount}</span>
+                <span> | </span>
+                <span>Current Page: {pageNumber + 1}</span>
+                <span> | </span>
+            </div>
+
+            <fieldset>
+                <legend>Goto page</legend>
+                <input
+                    value={gotoPageNumber}
+                    type="number"
+                    style={{display: 'inline'}}
+                    onChange={e => setGotoPageNumber(parseInt(e.target.value))}
+                />
+                <button
+                    onClick={() => {
+                        setPageNumber(gotoPageNumber ? gotoPageNumber - 1 : 0)
+                    }}
+                >
+                    Go
+                </button>
+            </fieldset>
+
+            <div>
+                <button
+                    onClick={() => {
+                        setPageNumber(Math.max(pageNumber - 1, 0))
+                    }}
+                    disabled={pageNumber <= 0}
+                >
+                    {'<'} Prev Page
+                </button>
+                <button
+                    onClick={() => {
+                        setPageNumber(pageNumber + 1)
+                    }}
+                >
+                    Next page {'>'}
+                </button>
+            </div>
         </fieldset>
     )
 }
