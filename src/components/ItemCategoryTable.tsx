@@ -16,7 +16,7 @@ const ItemCategoryTable = () => {
 
     const [currentItemCategoryLevel1, setCurrentItemCategoryLevel1] = useRecoilState(atoms.currentItemCategoryLevel1)
     useEffect(() => {
-        setCurrentItemCategoryLevel1(itemCategoryLevel1List[3])
+        setCurrentItemCategoryLevel1(itemCategoryLevel1List[0])
     }, [itemCategoryLevel1List])
 
     const [itemCategoryLevel2List, setItemCategoryLevel2List] = useRecoilState(atoms.itemCategoryLevel2List)
